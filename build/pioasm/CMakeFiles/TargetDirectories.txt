@@ -1,3 +1,0 @@
-/mnt/c/Users/roged/pi/blink_tutorial/build/pioasm/CMakeFiles/pioasm.dir
-/mnt/c/Users/roged/pi/blink_tutorial/build/pioasm/CMakeFiles/edit_cache.dir
-/mnt/c/Users/roged/pi/blink_tutorial/build/pioasm/CMakeFiles/rebuild_cache.dir
