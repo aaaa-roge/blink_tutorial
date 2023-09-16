@@ -2,6 +2,10 @@
 #include <task.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "semphr.h"
+
+static int taskCounter = 0;
+static SemaphoreHandle_t mutex;
 
 void led_task() {
 
@@ -10,10 +14,17 @@ void led_task() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     while(1) {
-        gpio_put(LED_PIN, 0);
-        vTaskDelay(75);
-        gpio_put(LED_PIN, 1);
-        vTaskDelay(75);
+        if(xSemaphoreTake(mutex, 0) == pdTRUE) {
+
+            if(taskCounter > 0) {
+                gpio_put(LED_PIN, 1);
+                vTaskDelay(100);
+                gpio_put(LED_PIN, 0);
+                vTaskDelay(100);
+                taskCounter--;
+            }
+            xSemaphoreGive(mutex);
+        }
     }
 }
 
@@ -24,16 +35,28 @@ void led_task2() {
     gpio_set_dir(LED_PIN, GPIO_OUT);
 
     while(1) {
-        gpio_put(LED_PIN, 0);
-        vTaskDelay(10);
-        gpio_put(LED_PIN, 1);
-        vTaskDelay(10);
+        if(xSemaphoreTake(mutex, 0) == pdTRUE) {
+
+            if(taskCounter == 0) {
+                gpio_put(LED_PIN, 1);
+                vTaskDelay(100);
+                gpio_put(LED_PIN, 0);
+                vTaskDelay(100);
+                taskCounter = 3;
+            }
+            xSemaphoreGive(mutex);
+        }
     }
 }
 
 
 int main() {
     stdio_init_all();
+
+    printf("\nLED init\n");
+
+    //create mutex before tasks
+    mutex = xSemaphoreCreateMutex();
 
     // 256 = num of words allocated to the task stack
     // not passing args to the LED_Task function therefore NULL
@@ -44,6 +67,8 @@ int main() {
     // start task scheduler
     vTaskStartScheduler();
 
-    while(1) {};
+    while(1) {
+        printf("running task");
+    };
 
 }
